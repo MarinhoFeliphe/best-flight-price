@@ -1,14 +1,16 @@
-package com.src.bestflightprice;
+package com.src.bestflightprice.companies.latam.air.lines.service;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.springframework.stereotype.Service;
 
-public class FooLatamAirLines {
+@Service
+public class LatamAirLinesServiceImpl {
 
-    public static void main(String[] args) {
+    public String get() {
 
         WebDriverManager.chromedriver().setup();
 
@@ -19,6 +21,8 @@ public class FooLatamAirLines {
         webDriver.get("https://www.latamairlines.com/br/pt");
 
         webDriver.findElement(By.id("cookies-politics-button")).click();
+
+        webDriver.findElement(By.id("id-tab-flight")).click();
 
         WebElement origin = webDriver.findElement(By.id("txtInputOrigin_field"));
         origin.click();
@@ -35,14 +39,14 @@ public class FooLatamAirLines {
         webDriver.findElement(By.id("departureDate")).click();
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("17 de novembro de 2021")) {
+            if (calendarDay.getAttribute("aria-label").contains("8 de dezembro de 2021")) {
                 calendarDay.click();
                 break;
             }
         }
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("8 de dezembro de 2021")) {
+            if (calendarDay.getAttribute("aria-label").contains("20 de dezembro de 2021")) {
                 calendarDay.click();
                 break;
             }
@@ -52,8 +56,6 @@ public class FooLatamAirLines {
 
         webDriver.findElement(By.id("cookies-politics-button")).click();
 
-        System.out.println(webDriver.getPageSource());
-
+        return "success";
     }
-
 }

@@ -1,4 +1,4 @@
-package com.src.bestflightprice.companies.voe.azul.dto;
+package com.src.bestflightprice.companies.latam.air.lines.dto;
 
 public class FlightPrice {
 
