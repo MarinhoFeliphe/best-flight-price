@@ -5,6 +5,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +36,13 @@ public class LatamAirLinesServiceImpl {
         destination.click();
         destination.clear();
         destination.sendKeys("Sao Paulo");
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         webDriver.findElement(By.id("btnItemAutoComplete_0")).click();
 
         webDriver.findElement(By.id("departureDate")).click();
@@ -53,8 +62,22 @@ public class LatamAirLinesServiceImpl {
         }
 
         webDriver.findElement(By.id("btnSearchCTA")).click();
+        WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
 
-        webDriver.findElement(By.id("cookies-politics-button")).click();
+        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperBodyFlights")));
+
+        WebElement wrapperBodyFlights = webDriver.findElement(By.id("WrapperBodyFlights"));
+
+        WebElement availableFlightsOL =
+                wrapperBodyFlights.findElement(By.cssSelector("[aria-label='Voos disponíveis.']"));
+
+        for (WebElement option : availableFlightsOL.findElements(By.className("sc-eAudoH"))) {
+            System.out.println(option.findElement(By.className("ckQlvf")).getText());
+            System.out.println();
+            System.out.println();
+        }
+
+        webDriver.quit();
 
         return "success";
     }
