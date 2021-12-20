@@ -39,14 +39,14 @@ public class LatamAirLinesServiceImpl {
         webDriver.findElement(By.id("departureDate")).click();
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("8 de dezembro de 2021")) {
+            if (calendarDay.getAttribute("aria-label").contains("10 de janeiro de 2022")) {
                 calendarDay.click();
                 break;
             }
         }
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("20 de dezembro de 2021")) {
+            if (calendarDay.getAttribute("aria-label").contains("20 de janeiro de 2022")) {
                 calendarDay.click();
                 break;
             }
