@@ -1,59 +1,54 @@
 package com.src.bestflightprice.companies.voe.azul.service;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+import com.src.bestflightprice.companies.services.CompanyService;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
+
 @Service
-public class VoeAzulServiceImpl {
+public class VoeAzulServiceImpl extends CompanyService {
 
-    public String get() {
-        WebDriverManager.chromedriver().setup();
-
-        WebDriver webDriver = new ChromeDriver();
-
-        webDriver.manage().window().maximize();
-
-        webDriver.get(_SITE);
+    public void get(String origin, String destiny, String departure, String arrival) {
+        WebDriver webDriver = initChromeWebDriver("https://www.voeazul.com.br/");
 
         WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
 
         webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.name("origin1")));
 
-        WebElement origin = webDriver.findElement(By.name("origin1"));
+        WebElement origin1 = webDriver.findElement(By.name("origin1"));
 
-        origin.sendKeys(_ORIGIN);
-        origin.sendKeys(Keys.ENTER);
+        origin1.sendKeys("(" + origin + ")");
+        origin1.sendKeys(Keys.ENTER);
 
-        WebElement destination = webDriver.findElement(By.name("destination1"));
+        WebElement destination1 = webDriver.findElement(By.name("destination1"));
 
-        destination.sendKeys(_DESTINATION);
-        destination.sendKeys(_DESTINATION);
-        destination.sendKeys(Keys.ENTER);
+        destination1.sendKeys("(" + destiny + ")");
+        destination1.sendKeys("(" + destiny+ ")");
+        destination1.sendKeys(Keys.ENTER);
 
-        WebElement departure = webDriver.findElement(By.name("departure1"));
+        WebElement departure1 = webDriver.findElement(By.name("departure1"));
 
-        departure.sendKeys(_DEPARTURE);
+        departure1.sendKeys(getStringDate(departure));
 
-        WebElement arrival = webDriver.findElement(By.name("arrival"));
+        WebElement arrival1 = webDriver.findElement(By.name("arrival"));
 
-        arrival.sendKeys(_ARRIVAL);
+        arrival1.sendKeys(getStringDate(arrival));
 
         WebElement money = webDriver.findElement(By.cssSelector("[value='R']"));
 
         money.click();
+        money.click();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        waitOneSecond();
 
         WebElement searchTicketsButton = webDriver.findElement(By.id("searchTicketsButton"));
 
@@ -92,8 +87,6 @@ public class VoeAzulServiceImpl {
         _setPointsData(webDriver.findElement(By.id("tbl-return-flights")));
 
         webDriver.quit();
-
-        return "";
     }
 
     private void _setMoneyData(WebElement tblDepartFlights) {
@@ -121,7 +114,8 @@ public class VoeAzulServiceImpl {
     private void _setPointsData(WebElement tblDepartFlights) {
         for (WebElement flightItem: tblDepartFlights.findElements(By.className("flight-item"))) {
 
-            WebElement flightPriceContainer = flightItem.findElement(By.cssSelector("[data-t='FormatModalPointsAndMoney']"));
+            WebElement flightPriceContainer = flightItem.findElement(
+                    By.cssSelector("[data-t='FormatModalPointsAndMoney']"));
 
             System.out.println(flightPriceContainer.getText());
 
@@ -129,12 +123,6 @@ public class VoeAzulServiceImpl {
             System.out.println();
         }
     }
-
-    private static String _SITE = "https://www.voeazul.com.br/";
-    private static String _ORIGIN = "Curitiba (CWB)";
-    private static String _DESTINATION = "Sao Paulo - Todos os Aeroportos (SAO)";
-    private static String _DEPARTURE = "10/01/2022";
-    private static String _ARRIVAL = "20/01/2022";
 
     /*if (!"---".equals(areaRadio.getText())) {
         WebElement flightPrice = areaRadio.findElement(By.className("flight-price"));

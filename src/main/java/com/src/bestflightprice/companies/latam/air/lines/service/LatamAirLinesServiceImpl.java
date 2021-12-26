@@ -1,61 +1,57 @@
 package com.src.bestflightprice.companies.latam.air.lines.service;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+import com.src.bestflightprice.companies.services.CompanyService;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
+
 @Service
-public class LatamAirLinesServiceImpl {
+public class LatamAirLinesServiceImpl extends CompanyService {
 
-    public String get() {
-
-        WebDriverManager.chromedriver().setup();
-
-        WebDriver webDriver = new ChromeDriver();
-
-        webDriver.manage().window().maximize();
-
-        webDriver.get("https://www.latamairlines.com/br/pt");
+    public void get(String origin, String destiny, String departure, String arrival) {
+        WebDriver webDriver = initChromeWebDriver("https://www.latamairlines.com/br/pt");
 
         webDriver.findElement(By.id("cookies-politics-button")).click();
 
         webDriver.findElement(By.id("id-tab-flight")).click();
 
-        WebElement origin = webDriver.findElement(By.id("txtInputOrigin_field"));
-        origin.click();
-        origin.clear();
-        origin.sendKeys("Curitiba");
+        WebElement txtInputOrigin_field = webDriver.findElement(By.id("txtInputOrigin_field"));
+        txtInputOrigin_field.click();
+        txtInputOrigin_field.clear();
+        txtInputOrigin_field.sendKeys(origin);
         webDriver.findElement(By.id("btnItemAutoComplete_0")).click();
 
         WebElement destination = webDriver.findElement(By.id("txtInputDestination_field"));
         destination.click();
         destination.clear();
-        destination.sendKeys("Sao Paulo");
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        waitOneSecond();
+
+        destination.sendKeys(destiny);
+
+        waitOneSecond();
 
         webDriver.findElement(By.id("btnItemAutoComplete_0")).click();
 
         webDriver.findElement(By.id("departureDate")).click();
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("10 de janeiro de 2022")) {
+            if (calendarDay.getAttribute("aria-label").contains(getStringDate(departure))) {
                 calendarDay.click();
                 break;
             }
         }
 
         for(WebElement calendarDay: webDriver.findElements(By.className("CalendarDay"))) {
-            if (calendarDay.getAttribute("aria-label").contains("20 de janeiro de 2022")) {
+            if (calendarDay.getAttribute("aria-label").contains(getStringDate(arrival))) {
                 calendarDay.click();
                 break;
             }
@@ -66,19 +62,36 @@ public class LatamAirLinesServiceImpl {
 
         webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperBodyFlights")));
 
-        WebElement wrapperBodyFlights = webDriver.findElement(By.id("WrapperBodyFlights"));
+        WebElement sortByDropdownButton = webDriver.findElement(
+                By.cssSelector("[data-testid='sort-by-dropdown-dropdown-button']"));
 
-        WebElement availableFlightsOL =
-                wrapperBodyFlights.findElement(By.cssSelector("[aria-label='Voos disponíveis.']"));
+        sortByDropdownButton.click();
 
-        for (WebElement option : availableFlightsOL.findElements(By.className("sc-eAudoH"))) {
+        WebElement priceASC = webDriver.findElement(
+                By.cssSelector("[data-value='PRICE,asc']"));
+
+        priceASC.click();
+
+        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperBodyFlights")));
+
+        for (WebElement option : webDriver.findElements(By.className("sc-eAudoH"))) {
             System.out.println(option.findElement(By.className("ckQlvf")).getText());
             System.out.println();
             System.out.println();
         }
 
         webDriver.quit();
+    }
 
-        return "success";
+    @Override
+    public String getStringDate(String date) {
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+                "MMMM d, yyyy", new Locale("pt", "BR"));
+
+        String[] split = localDate.format(formatter).split("\\s+");
+
+        return split[1].replace(",", "") + " de " + split[0] + " de " + split[2];
     }
 }
