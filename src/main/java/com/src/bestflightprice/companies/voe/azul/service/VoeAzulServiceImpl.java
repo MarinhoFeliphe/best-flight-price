@@ -1,5 +1,7 @@
 package com.src.bestflightprice.companies.voe.azul.service;
 
+import com.src.bestflightprice.companies.domain.Companies;
+import com.src.bestflightprice.companies.domain.FlightOffer;
 import com.src.bestflightprice.companies.services.CompanyService;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -11,123 +13,187 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 @Service
 public class VoeAzulServiceImpl extends CompanyService {
 
-    public void get(String origin, String destiny, String departure, String arrival) {
+    public List<FlightOffer> get(String origin, String destiny, String departure, String arrival) {
         WebDriver webDriver = initChromeWebDriver("https://www.voeazul.com.br/");
 
-        WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
+        try {
+            WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
 
-        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.name("origin1")));
+            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.name("origin1")));
 
-        WebElement origin1 = webDriver.findElement(By.name("origin1"));
+            WebElement origin1 = webDriver.findElement(By.name("origin1"));
 
-        origin1.sendKeys("(" + origin + ")");
-        origin1.sendKeys(Keys.ENTER);
+            origin1.sendKeys("(" + origin + ")");
+            origin1.sendKeys(Keys.ENTER);
 
-        WebElement destination1 = webDriver.findElement(By.name("destination1"));
+            WebElement destination1 = webDriver.findElement(By.name("destination1"));
 
-        destination1.sendKeys("(" + destiny + ")");
-        destination1.sendKeys("(" + destiny+ ")");
-        destination1.sendKeys(Keys.ENTER);
+            destination1.sendKeys("(" + destiny + ")");
+            destination1.sendKeys("(" + destiny+ ")");
+            destination1.sendKeys(Keys.ENTER);
 
-        WebElement departure1 = webDriver.findElement(By.name("departure1"));
+            WebElement departure1 = webDriver.findElement(By.name("departure1"));
 
-        departure1.sendKeys(getStringDate(departure));
+            departure1.sendKeys(getStringDate(departure));
 
-        WebElement arrival1 = webDriver.findElement(By.name("arrival"));
+            WebElement arrival1 = webDriver.findElement(By.name("arrival"));
 
-        arrival1.sendKeys(getStringDate(arrival));
+            arrival1.sendKeys(getStringDate(arrival));
 
-        WebElement money = webDriver.findElement(By.cssSelector("[value='R']"));
+            WebElement money = webDriver.findElement(By.cssSelector("[value='R']"));
 
-        money.click();
-        money.click();
+            money.click();
+            money.click();
 
-        waitOneSecond();
+            waitOneSecond();
 
-        WebElement searchTicketsButton = webDriver.findElement(By.id("searchTicketsButton"));
+            WebElement searchTicketsButton = webDriver.findElement(By.id("searchTicketsButton"));
 
-        searchTicketsButton.click();
+            searchTicketsButton.click();
 
-        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tbl-depart-flights")));
+            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tbl-depart-flights")));
 
-        System.out.println("MONEY DEPART");
+            List<FlightOffer> flightOffers = new ArrayList<>();
 
-        _setMoneyData(webDriver.findElement(By.id("tbl-depart-flights")));
+            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), "DEPART");
+            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), "RETURN");
 
-        System.out.println();
-        System.out.println();
+            WebElement points = webDriver.findElement(By.cssSelector("[data-value-price='points']"));
 
-        System.out.println("MONEY RETURN");
+            points.click();
 
-        _setMoneyData(webDriver.findElement(By.id("tbl-return-flights")));
+            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("overview-bx-points")));
 
-        WebElement points = webDriver.findElement(By.cssSelector("[data-value-price='points']"));
+            System.out.println("POINTS DEPART");
 
-        points.click();
+            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), "DEPART");
 
-        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("overview-bx-points")));
+            System.out.println();
 
-        System.out.println();
-        System.out.println();
+            System.out.println("POINTS RETURN");
 
-        System.out.println("POINTS DEPART");
+            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), "RETURN");
 
-        _setPointsData(webDriver.findElement(By.id("tbl-depart-flights")));
+            webDriver.quit();
 
-        System.out.println();
+            return flightOffers;
 
-        System.out.println("POINTS RETURN");
+        } catch (Exception exception) {
+            webDriver.quit();
+            this.get(origin, destiny, departure, arrival);
+        }
 
-        _setPointsData(webDriver.findElement(By.id("tbl-return-flights")));
-
-        webDriver.quit();
+        return null;
     }
 
-    private void _setMoneyData(WebElement tblDepartFlights) {
+    private void _setPointsData(List<FlightOffer> flightOffers, WebElement tblDepartFlights, String type) {
         for (WebElement flightItem: tblDepartFlights.findElements(By.className("flight-item"))) {
+
+            FlightOffer flightOffer = new FlightOffer();
+
+            flightOffer.setType(type);
+            flightOffer.setCompany(Companies.VOE_AZUL.getName());
+            flightOffer.setSite(Companies.VOE_AZUL.getSite());
+
+            _setDetails(flightItem, flightOffer);
+
+            WebElement flightPriceContainer = flightItem.findElement(
+                    By.cssSelector("[data-t='FormatModalPointsAndMoney']"));
+
+            WebElement flightPriceOptions = flightPriceContainer.findElement(By.className("flight-price-options"));
+
+            WebElement firstOption = flightPriceOptions.findElements(By.className("area-radio")).get(0);
+
+            flightOffer.setLog(firstOption.getText());
+
+            WebElement flightPrice = firstOption.findElement(By.className("flight-price"));
+
+            WebElement pricePoints = flightPrice.findElement(By.className("price-points"));
+
+            WebElement farePrice = pricePoints.findElement(By.className("fare-price"));
+
+            flightOffer.setPoints(Long.parseLong(farePrice.getText().replaceAll("\\.", "")));
+
+            flightOffers.add(flightOffer);
+        }
+    }
+
+    private void _setMoneyData(List<FlightOffer> flightOffers, WebElement tblDepartFlights, String type) {
+
+        for (WebElement flightItem: tblDepartFlights.findElements(By.className("flight-item"))) {
+
+            FlightOffer maisAzulFlightOffer = new FlightOffer();
+
+            maisAzulFlightOffer.setType(type);
+            maisAzulFlightOffer.setCompany(Companies.VOE_AZUL.getName());
+            maisAzulFlightOffer.setSite(Companies.VOE_AZUL.getSite());
+
+            _setDetails(flightItem, maisAzulFlightOffer);
 
             WebElement maisAzulFlightPriceContainer =
                     flightItem.findElements(By.className("flight-price-container")).get(0);
 
             WebElement maisAzulAreaRadio = maisAzulFlightPriceContainer.findElement(By.className("area-radio"));
 
-            System.out.println("Mais Azul -> " + maisAzulAreaRadio.getText());
+            maisAzulFlightOffer.setLog("Mais Azul -> " + maisAzulAreaRadio.getText());
+
+            this._setPriceDetails(maisAzulFlightOffer, maisAzulAreaRadio);
+
+            flightOffers.add(maisAzulFlightOffer);
+
+            FlightOffer azulFlightOffer = new FlightOffer(maisAzulFlightOffer);
 
             WebElement azulFlightPriceContainer =
                     flightItem.findElements(By.className("flight-price-container")).get(1);
 
             WebElement azulAreaRadio = azulFlightPriceContainer.findElement(By.className("area-radio"));
 
-            System.out.println("Azul -> " + azulAreaRadio.getText());
+            azulFlightOffer.setLog("Azul -> " + azulAreaRadio.getText());
 
-            System.out.println();
-            System.out.println();
+            this._setPriceDetails(azulFlightOffer, azulAreaRadio);
+
+            flightOffers.add(azulFlightOffer);
         }
     }
 
-    private void _setPointsData(WebElement tblDepartFlights) {
-        for (WebElement flightItem: tblDepartFlights.findElements(By.className("flight-item"))) {
+    private void _setPriceDetails(FlightOffer flightOffer, WebElement radio) {
+        if (!"---".equals(radio.getText())) {
+            WebElement flightPrice = radio.findElement(By.className("flight-price"));
 
-            WebElement flightPriceContainer = flightItem.findElement(
-                    By.cssSelector("[data-t='FormatModalPointsAndMoney']"));
-
-            System.out.println(flightPriceContainer.getText());
-
-            System.out.println();
-            System.out.println();
+            flightOffer.setCurrency(flightPrice.findElements(By.className("currency")).get(0).getText());
+            flightOffer.setPrice(Double.parseDouble(flightPrice.findElement(
+                    By.className("fare-price")).getText().replaceAll(
+                    "\\.", "").replace(",", ".")));
         }
     }
 
-    /*if (!"---".equals(areaRadio.getText())) {
-        WebElement flightPrice = areaRadio.findElement(By.className("flight-price"));
-        String currency = flightPrice.findElements(By.className("currency")).get(0).getText();
-        String farePrice = flightPrice.findElement(By.className("fare-price")).getText();
-        System.out.println(currency + ": " + farePrice);
-    }*/
+    private void _setDetails(WebElement flightItem, FlightOffer flightOffer) {
+        WebElement flightDetailsContainer =
+                flightItem.findElement(By.className("flight-details-container"));
+
+        WebElement clearFix =
+                flightDetailsContainer.findElement(By.className("clearfix"));
+
+        WebElement flightDetails =
+                clearFix.findElement(By.className("flight-details"));
+
+        WebElement detail =
+                flightDetails.findElement(By.className("detail"));
+
+        WebElement showInfo =
+                detail.findElement(By.className("show-info"));
+
+        flightOffer.setArrivalTime(showInfo.getAttribute("arrivaltime"));
+        flightOffer.setDepartureTime(showInfo.getAttribute("departuretime"));
+        flightOffer.setFlightNumber(showInfo.getAttribute("flightnumber"));
+    }
+
 }
