@@ -1,26 +1,30 @@
 package com.src.bestflightprice.companies.voe.azul.service;
 
 import com.src.bestflightprice.companies.domain.Companies;
+import com.src.bestflightprice.companies.domain.ErrorLog;
 import com.src.bestflightprice.companies.domain.FlightOffer;
-import com.src.bestflightprice.companies.services.CompanyService;
+import com.src.bestflightprice.companies.repository.ErrorLogRepository;
+import com.src.bestflightprice.companies.services.AbstractCompanyService;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class VoeAzulServiceImpl extends CompanyService {
+public class VoeAzulServiceImpl extends AbstractCompanyService {
+
+    @Autowired
+    private ErrorLogRepository _errorLogRepository;
 
     private int retryCount = 0;
 
-    public List<FlightOffer> get(String origin, String destiny, String departure, String arrival) {
+    public List<FlightOffer> post(String origin, String destiny, String departure, String arrival) {
         WebDriver webDriver = initChromeWebDriver(Companies.VOE_AZUL.getSite());
 
         try {
@@ -79,10 +83,13 @@ public class VoeAzulServiceImpl extends CompanyService {
             return flightOffers;
 
         } catch (Exception exception) {
+            _errorLogRepository.save(
+                    new ErrorLog(exception.getMessage(), Companies.VOE_AZUL.getName()));
+
             webDriver.quit();
             if (retryCount <= 4) {
                 retryCount++;
-                this.get(origin, destiny, departure, arrival);
+                this.post(origin, destiny, departure, arrival);
             }
         }
 
@@ -97,6 +104,7 @@ public class VoeAzulServiceImpl extends CompanyService {
             flightOffer.setType(type);
             flightOffer.setCompany(Companies.VOE_AZUL.getName());
             flightOffer.setSite(Companies.VOE_AZUL.getSite());
+            flightOffer.setPriceType(POINTS);
 
             _setDetails(flightItem, flightOffer);
 
@@ -130,6 +138,7 @@ public class VoeAzulServiceImpl extends CompanyService {
             maisAzulFlightOffer.setType(type);
             maisAzulFlightOffer.setCompany(Companies.VOE_AZUL.getName());
             maisAzulFlightOffer.setSite(Companies.VOE_AZUL.getSite());
+            maisAzulFlightOffer.setPriceType(MONEY);
 
             _setDetails(flightItem, maisAzulFlightOffer);
 

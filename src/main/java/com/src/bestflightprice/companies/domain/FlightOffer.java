@@ -1,13 +1,24 @@
 package com.src.bestflightprice.companies.domain;
 
-public class FlightOffer {
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.io.Serializable;
 
+@Entity
+public class FlightOffer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
     private String flightNumber;
     private String departureTime;
     private String arrivalTime;
     private String currency;
     private double price;
+    private String priceType;
     private long points;
     private String type;
     private String log;
@@ -22,6 +33,7 @@ public class FlightOffer {
         this.arrivalTime = flightOffer.getArrivalTime();
         this.currency = flightOffer.getCurrency();
         this.type = flightOffer.getType();
+        this.priceType = flightOffer.getPriceType();
         this.site = flightOffer.getSite();
         this.company = flightOffer.getCompany();
     }
@@ -72,6 +84,14 @@ public class FlightOffer {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getPriceType() {
+        return priceType;
+    }
+
+    public void setPriceType(String priceType) {
+        this.priceType = priceType;
     }
 
     public long getPoints() {

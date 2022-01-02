@@ -1,25 +1,33 @@
 package com.src.bestflightprice.companies.latam.air.lines.service;
 
 import com.src.bestflightprice.companies.domain.Companies;
+import com.src.bestflightprice.companies.domain.ErrorLog;
 import com.src.bestflightprice.companies.domain.FlightOffer;
-import com.src.bestflightprice.companies.services.CompanyService;
+import com.src.bestflightprice.companies.repository.ErrorLogRepository;
+import com.src.bestflightprice.companies.services.AbstractCompanyService;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @Service
-public class LatamAirLinesServiceImpl extends CompanyService {
+public class LatamAirLinesServiceImpl extends AbstractCompanyService {
+
+    @Autowired
+    private ErrorLogRepository _errorLogRepository;
 
     private int retryCount = 0;
 
-    public List<FlightOffer> get(String origin, String destiny, String departure, String arrival) {
+    public List<FlightOffer> post(String origin, String destiny, String departure, String arrival) {
         WebDriver webDriver = initChromeWebDriver(Companies.LATAM_AIR_LINES.getSite());
 
         List<FlightOffer> flightOffers = new ArrayList<>();
@@ -64,32 +72,19 @@ public class LatamAirLinesServiceImpl extends CompanyService {
             }
 
             webDriver.findElement(By.id("btnSearchCTA")).click();
-            WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
-
-            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperBodyFlights")));
-
-            WebElement sortByDropdownButton = webDriver.findElement(
-                    By.cssSelector("[data-testid='sort-by-dropdown-dropdown-button']"));
-
-            sortByDropdownButton.click();
-
-            WebElement priceASC = webDriver.findElement(
-                    By.cssSelector("[data-value='PRICE,asc']"));
-
-            priceASC.click();
+            WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10);
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperBodyFlights")));
 
             _setMoney(flightOffers, webDriver, DEPART);
 
-            webDriver.findElement(By.className("sc-fdQOMr")).click();
+            webDriver.findElement(By.className("sc-bJTOcE")).click();
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bundle-0-0")));
 
             webDriver.findElement(By.id("bundle-0-0")).click();
 
-            waitOneSecond();
-            waitOneSecond();
+            waitSeconds(3000);
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperCardFlight0")));
 
@@ -101,10 +96,13 @@ public class LatamAirLinesServiceImpl extends CompanyService {
 
             return flightOffers;
         } catch (Exception exception) {
+            _errorLogRepository.save(
+                    new ErrorLog(exception.getMessage(), Companies.LATAM_AIR_LINES.getName()));
+
             webDriver.quit();
             if (retryCount <= 4) {
                 retryCount++;
-                this.get(origin, destiny, departure, arrival);
+                this.post(origin, destiny, departure, arrival);
             }
         }
 
@@ -119,6 +117,7 @@ public class LatamAirLinesServiceImpl extends CompanyService {
             flightOffer.setCompany(Companies.LATAM_AIR_LINES.getName());
             flightOffer.setSite(Companies.LATAM_AIR_LINES.getSite());
             flightOffer.setType(type);
+            flightOffer.setPriceType(MONEY);
 
             WebElement ckQlvf = sceAudoH.findElement(By.className("ckQlvf"));
 

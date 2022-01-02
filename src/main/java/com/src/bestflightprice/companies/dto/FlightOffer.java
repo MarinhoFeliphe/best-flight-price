@@ -6,6 +6,7 @@ public class FlightOffer {
     private String departureTime;
     private String arrivalTime;
     private double price;
+    private String priceType;
     private double points;
     private String type;
     private String log;
@@ -22,6 +23,7 @@ public class FlightOffer {
         this.price = flightOffer.getPrice();
         this.points = flightOffer.getPoints();
         this.type = flightOffer.getType();
+        this.priceType = flightOffer.getPriceType();
         this.log = flightOffer.getLog();
         this.site = flightOffer.getSite();
         this.company = flightOffer.getCompany();
@@ -57,6 +59,14 @@ public class FlightOffer {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getPriceType() {
+        return priceType;
+    }
+
+    public void setPriceType(String priceType) {
+        this.priceType = priceType;
     }
 
     public double getPoints() {

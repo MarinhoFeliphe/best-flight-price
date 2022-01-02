@@ -2,7 +2,7 @@ package com.src.bestflightprice.companies.domain;
 
 public enum Companies {
 
-    LATAM_AIR_LINES("Latam Air Line", "https://www.latamairlines.com/br/pt"),
+    LATAM_AIR_LINES("Latam Air Lines", "https://www.latamairlines.com/br/pt"),
     VOE_AZUL("Voe Azul", "https://www.voeazul.com.br/");
 
     Companies (String name, String site) {
