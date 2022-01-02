@@ -13,16 +13,15 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
 public class VoeAzulServiceImpl extends CompanyService {
 
+    private int retryCount = 0;
+
     public List<FlightOffer> get(String origin, String destiny, String departure, String arrival) {
-        WebDriver webDriver = initChromeWebDriver("https://www.voeazul.com.br/");
+        WebDriver webDriver = initChromeWebDriver(Companies.VOE_AZUL.getSite());
 
         try {
             WebDriverWait webDriverWait = new WebDriverWait(webDriver, 15);
@@ -63,8 +62,8 @@ public class VoeAzulServiceImpl extends CompanyService {
 
             List<FlightOffer> flightOffers = new ArrayList<>();
 
-            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), "DEPART");
-            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), "RETURN");
+            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), DEPART);
+            _setMoneyData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), RETURN);
 
             WebElement points = webDriver.findElement(By.cssSelector("[data-value-price='points']"));
 
@@ -72,15 +71,8 @@ public class VoeAzulServiceImpl extends CompanyService {
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("overview-bx-points")));
 
-            System.out.println("POINTS DEPART");
-
-            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), "DEPART");
-
-            System.out.println();
-
-            System.out.println("POINTS RETURN");
-
-            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), "RETURN");
+            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-depart-flights")), DEPART);
+            _setPointsData(flightOffers, webDriver.findElement(By.id("tbl-return-flights")), RETURN);
 
             webDriver.quit();
 
@@ -88,10 +80,13 @@ public class VoeAzulServiceImpl extends CompanyService {
 
         } catch (Exception exception) {
             webDriver.quit();
-            this.get(origin, destiny, departure, arrival);
+            if (retryCount <= 4) {
+                retryCount++;
+                this.get(origin, destiny, departure, arrival);
+            }
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private void _setPointsData(List<FlightOffer> flightOffers, WebElement tblDepartFlights, String type) {
@@ -169,9 +164,7 @@ public class VoeAzulServiceImpl extends CompanyService {
             WebElement flightPrice = radio.findElement(By.className("flight-price"));
 
             flightOffer.setCurrency(flightPrice.findElements(By.className("currency")).get(0).getText());
-            flightOffer.setPrice(Double.parseDouble(flightPrice.findElement(
-                    By.className("fare-price")).getText().replaceAll(
-                    "\\.", "").replace(",", ".")));
+            flightOffer.setPrice(toDouble(flightPrice.findElement(By.className("fare-price")).getText()));
         }
     }
 

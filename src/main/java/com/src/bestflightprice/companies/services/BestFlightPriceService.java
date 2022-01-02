@@ -6,6 +6,7 @@ import com.src.bestflightprice.companies.voe.azul.service.VoeAzulServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,8 +19,11 @@ public class BestFlightPriceService {
 
     public List<FlightOffer> get(String origin, String destiny, String departure, String arrival) {
 
-        //_latamAirLinesService.get(origin, destiny, departure, arrival);
+        List<FlightOffer> flightOffers = new ArrayList<>();
 
-        return _voeAzulServiceImpl.get(origin, destiny, departure, arrival);
+        flightOffers.addAll(_voeAzulServiceImpl.get(origin, destiny, departure, arrival));
+        flightOffers.addAll(_latamAirLinesService.get(origin, destiny, departure, arrival));
+
+        return flightOffers;
     }
 }

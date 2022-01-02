@@ -6,6 +6,9 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 public abstract class CompanyService implements ICompanyService {
 
+    protected final String DEPART = "DEPART";
+    protected final String RETURN = "RETURN";
+
     protected WebDriver initChromeWebDriver(String site) {
         WebDriverManager.chromedriver().setup();
 
@@ -24,6 +27,10 @@ public abstract class CompanyService implements ICompanyService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    protected double toDouble(String price) {
+        return Double.parseDouble(price.replaceAll("\\.", "").replace(",", "."));
     }
 
     @Override
