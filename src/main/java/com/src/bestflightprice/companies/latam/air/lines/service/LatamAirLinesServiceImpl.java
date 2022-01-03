@@ -78,13 +78,15 @@ public class LatamAirLinesServiceImpl extends AbstractCompanyService {
 
             _setMoney(flightOffers, webDriver, DEPART);
 
+            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("sc-bJTOcE")));
+
             webDriver.findElement(By.className("sc-bJTOcE")).click();
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bundle-0-0")));
 
             webDriver.findElement(By.id("bundle-0-0")).click();
 
-            waitSeconds(3000);
+            waitSeconds(2000);
 
             webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("WrapperCardFlight0")));
 
@@ -96,10 +98,9 @@ public class LatamAirLinesServiceImpl extends AbstractCompanyService {
 
             return flightOffers;
         } catch (Exception exception) {
+            webDriver.quit();
             _errorLogRepository.save(
                     new ErrorLog(exception.getMessage(), Companies.LATAM_AIR_LINES.getName()));
-
-            webDriver.quit();
             if (retryCount <= 4) {
                 retryCount++;
                 this.post(origin, destiny, departure, arrival);
@@ -118,6 +119,10 @@ public class LatamAirLinesServiceImpl extends AbstractCompanyService {
             flightOffer.setSite(Companies.LATAM_AIR_LINES.getSite());
             flightOffer.setType(type);
             flightOffer.setPriceType(MONEY);
+
+            WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10);
+
+            webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("ckQlvf")));
 
             WebElement ckQlvf = sceAudoH.findElement(By.className("ckQlvf"));
 

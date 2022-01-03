@@ -51,6 +51,8 @@ public class VoeAzulServiceImpl extends AbstractCompanyService {
 
             arrival1.sendKeys(getStringDate(arrival));
 
+            waitOneSecond();
+
             WebElement money = webDriver.findElement(By.cssSelector("[value='R']"));
 
             money.click();
@@ -83,10 +85,9 @@ public class VoeAzulServiceImpl extends AbstractCompanyService {
             return flightOffers;
 
         } catch (Exception exception) {
+            webDriver.quit();
             _errorLogRepository.save(
                     new ErrorLog(exception.getMessage(), Companies.VOE_AZUL.getName()));
-
-            webDriver.quit();
             if (retryCount <= 4) {
                 retryCount++;
                 this.post(origin, destiny, departure, arrival);
