@@ -9,7 +9,7 @@ public class ErrorLog implements Serializable {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Lob
     private String log;

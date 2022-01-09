@@ -51,7 +51,7 @@ public class VoeAzulServiceImpl extends AbstractCompanyService {
 
             arrival1.sendKeys(getStringDate(arrival));
 
-            waitOneSecond();
+            waitSeconds(2000);
 
             WebElement money = webDriver.findElement(By.cssSelector("[value='R']"));
 
@@ -118,15 +118,17 @@ public class VoeAzulServiceImpl extends AbstractCompanyService {
 
             flightOffer.setLog(firstOption.getText());
 
-            WebElement flightPrice = firstOption.findElement(By.className("flight-price"));
+            if (!"---".equals(firstOption.getText())) {
+                WebElement flightPrice = firstOption.findElement(By.className("flight-price"));
 
-            WebElement pricePoints = flightPrice.findElement(By.className("price-points"));
+                WebElement pricePoints = flightPrice.findElement(By.className("price-points"));
 
-            WebElement farePrice = pricePoints.findElement(By.className("fare-price"));
+                WebElement farePrice = pricePoints.findElement(By.className("fare-price"));
 
-            flightOffer.setPoints(Long.parseLong(farePrice.getText().replaceAll("\\.", "")));
+                flightOffer.setPoints(Long.parseLong(farePrice.getText().replaceAll("\\.", "")));
 
-            flightOffers.add(flightOffer);
+                flightOffers.add(flightOffer);
+            }
         }
     }
 
